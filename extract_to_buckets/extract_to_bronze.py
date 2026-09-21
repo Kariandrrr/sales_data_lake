@@ -1,9 +1,11 @@
 import io
 import os
-import boto3
+
 import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
+
+from utils.create_s3_client import s3_client
 
 load_dotenv()
 
@@ -34,13 +36,6 @@ if not all(
 
 DB_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 engine = create_engine(DB_URL)
-
-s3_client = boto3.client(
-    "s3",
-    endpoint_url=MINIO_ENDPOINT,
-    aws_access_key_id=MINIO_ACCESS_KEY,
-    aws_secret_access_key=MINIO_SECRET_KEY,
-)
 
 
 def ensure_bucket_exists(bucket_name: str):
