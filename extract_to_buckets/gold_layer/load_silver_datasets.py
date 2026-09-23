@@ -1,6 +1,4 @@
-import io
-import pandas as pd
-from utils.parquet_functions import read_parquet, write_parquet
+from utils.parquet_functions import read_parquet
 
 print("1. Loading silver datasets...")
 
