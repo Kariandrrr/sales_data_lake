@@ -26,9 +26,7 @@ def hash_pii(val: str) -> str:
 
 print("--- Starting silver layer transformation ---")
 
-# 1. Orders
 print("1. Cleaning orders...")
-# FIX: Исправлена опечатка в имени файла (orders.parquet)
 df_orders = read_parquet("bronze/orders/orders.parquet")
 
 timestamp_cols = ["order_purchase_timestamp", "order_approved_at"]
@@ -38,7 +36,6 @@ for col in timestamp_cols:
 df_orders = df_orders.dropna(subset=["order_purchase_timestamp"])
 write_parquet("silver/orders/orders.parquet", df_orders)
 
-# 2. Customers
 print("2. Deduplicating and masking PII...")
 df_customers = read_parquet("bronze/customers/customers.parquet")
 
@@ -51,30 +48,25 @@ df_customers["customer_city"] = df_customers["customer_city"].str.title().str.st
 
 write_parquet("silver/customers/customers.parquet", df_customers)
 
-# 3. Order Items
 print("3. Deduplicating order items...")
 df_items = read_parquet("bronze/order_items/order_items.parquet")
 df_items = df_items.drop_duplicates(subset=["order_id", "order_item_id"])
 
-# FIX: Исправлено условие для freight_value с <= 0 на >= 0
 df_items = df_items[(df_items["price"] >= 0) & (df_items["freight_value"] >= 0)]
 
 write_parquet("silver/order_items/order_items.parquet", df_items)
 
-# 4. Order Payments
 print("4. Deduplicating order payments...")
 df_payments = read_parquet("bronze/order_payments/order_payments.parquet")
 df_payments = df_payments.drop_duplicates(subset=["order_id", "payment_sequential"])
 write_parquet("silver/order_payments/order_payments.parquet", df_payments)
 
-# 5. Order Reviews
 print("5. Deduplicating order reviews...")
 df_reviews = read_parquet("bronze/order_reviews/order_reviews.parquet")
 df_reviews = df_reviews.drop_duplicates(subset=["review_id"])
 
 write_parquet("silver/order_reviews/order_reviews.parquet", df_reviews)
 
-# 6. Category Translation
 print("6. Processing category translation...")
 df_trans = read_parquet(
     "bronze/product_category_name_translation/product_category_name_translation.parquet"
@@ -97,7 +89,6 @@ df_trans = pd.concat([df_trans, missing_translations]).drop_duplicates(
     subset=["product_category_name"]
 )
 
-# FIX: Выровнен целевой путь S3 с подпапкой
 write_parquet(
     "silver/product_category_name_translation/product_category_name_translation.parquet",
     df_trans,
