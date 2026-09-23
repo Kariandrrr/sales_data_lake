@@ -5,6 +5,7 @@ import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 
+from utils.bucket_functions import ensure_bucket_exists
 from utils.create_s3_client import s3_client
 
 load_dotenv()
@@ -36,15 +37,6 @@ if not all(
 
 DB_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 engine = create_engine(DB_URL)
-
-
-def ensure_bucket_exists(bucket_name: str):
-    response = s3_client.list_buckets()
-    buckets = [b["Name"] for b in response.get("Buckets", [])]
-    if bucket_name not in buckets:
-        s3_client.create_bucket(Bucket=bucket_name)
-        print(f"✓ Created S3 Bucket: '{bucket_name}'")
-
 
 print("--- Starting extraction pipeline to MinIO (Bronze layer) ---")
 
