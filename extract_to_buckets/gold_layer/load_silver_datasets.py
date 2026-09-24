@@ -1,6 +1,6 @@
-from utils.parquet_functions import read_parquet
+from utils import read_parquet
 
-print("1. Loading silver datasets...")
+print("Loading silver datasets...")
 
 df_orders = read_parquet("silver/orders/orders.parquet")
 df_items = read_parquet("silver/order_items/order_items.parquet")
@@ -24,4 +24,7 @@ df_sales_base = (
     .merge(df_products_enriched, on="product_id", how="left")
 )
 
-df_sales_base["total_value"] = df_sales_base["price"] + df_sales_base["freigth_value"]
+df_sales_base["total_value"] = df_sales_base["price"] + df_sales_base["freight_value"]
+
+
+print("=== Data load finished successfully! ===")
