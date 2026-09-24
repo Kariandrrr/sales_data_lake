@@ -2,10 +2,10 @@ from load_silver_datasets import df_sales_base
 from utils.parquet_functions import write_parquet
 
 mart_geo = (
-    df_sales_base.groupby("customer_state", "customer_city")
+    df_sales_base.groupby(["customer_state", "customer_city"])
     .agg(
         total_orders=("order_id", "nunique"),
-        unique_customers=("customer_is", "nunique"),
+        unique_customers=("customer_id", "nunique"),
         total_spent=("total_value", "sum"),
         avg_freiht_cost=("freight_value", "mean"),
     )
