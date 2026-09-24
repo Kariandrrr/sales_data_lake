@@ -2,7 +2,7 @@ import hashlib
 
 import pandas as pd
 
-from utils.parquet_functions import write_parquet, read_parquet
+from utils import write_parquet, read_parquet
 
 
 def hash_pii(val: str) -> str:
@@ -80,5 +80,21 @@ write_parquet(
     "silver/product_category_name_translation/product_category_name_translation.parquet",
     df_trans,
 )
+
+print("7. Cleaning products...")
+df_products = read_parquet("bronze/products/products.parquet")
+df_products = df_products.drop_duplicates(subset=["product_id"])
+df_products["product_category_name"] = df_products["product_category_name"].fillna(
+    "unknown"
+)
+
+write_parquet("silver/products/products.parquet", df_products)
+
+print("8. Cleaning sellers...")
+df_sellers = read_parquet("bronze/sellers/sellers.parquet")
+df_sellers = df_sellers.drop_duplicates(subset=["seller_id"])
+df_sellers["seller_city"] = df_sellers["seller_city"].str.title().str.strip()
+
+write_parquet("silver/sellers/sellers.parquet", df_sellers)
 
 print("--- Silver transformation completed successfully! ---")
