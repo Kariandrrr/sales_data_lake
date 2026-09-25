@@ -1,5 +1,5 @@
+from clients import write_parquet
 from load_silver_datasets import df_sales_base
-from utils.parquet_functions import write_parquet
 
 mart_sellers = (
     df_sales_base.groupby("seller_id")

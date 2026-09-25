@@ -5,8 +5,7 @@ import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 
-from utils import ensure_bucket_exists
-from utils import s3_client
+from clients import ensure_bucket_exists, s3_client
 
 load_dotenv()
 

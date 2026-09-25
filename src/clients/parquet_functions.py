@@ -2,7 +2,7 @@ import io
 
 import pandas as pd
 
-from utils.create_s3_client import BUCKET_NAME, s3_client
+from src.clients.create_s3_client import BUCKET_NAME, s3_client
 
 
 def read_parquet(key: str) -> pd.DataFrame:

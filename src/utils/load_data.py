@@ -22,7 +22,7 @@ DB_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 engine = create_engine(DB_URL)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(BASE_DIR, "../data_csv")
+DATA_DIR = os.path.join(BASE_DIR, "../../data_csv")
 
 csv_files = [f for f in os.listdir(DATA_DIR) if f.endswith(".csv")]
 

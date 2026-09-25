@@ -1,4 +1,4 @@
-from utils import read_parquet
+from clients import read_parquet
 
 print("Loading silver datasets...")
 

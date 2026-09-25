@@ -2,7 +2,7 @@ import hashlib
 
 import pandas as pd
 
-from utils import write_parquet, read_parquet
+from clients import write_parquet, read_parquet
 
 
 def hash_pii(val: str) -> str:
