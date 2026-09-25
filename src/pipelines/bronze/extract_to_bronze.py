@@ -1,45 +1,30 @@
 import io
-import os
 
 import pandas as pd
-from dotenv import load_dotenv
 from sqlalchemy import create_engine
 
-from clients import ensure_bucket_exists, s3_client
-
-load_dotenv()
-
-DB_USER = os.getenv("POSTGRES_USER")
-DB_PASSWORD = os.getenv("POSTGRES_PASSWORD")
-DB_HOST = os.getenv("POSTGRES_HOST")
-DB_PORT = os.getenv("POSTGRES_PORT")
-DB_NAME = os.getenv("POSTGRES_DB")
-
-MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT")
-MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY")
-MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
-BRONZE_BUCKET = "lakehouse"
+from ...clients import ensure_bucket_exists, s3_client
+from ...config import settings
 
 if not all(
     [
-        DB_USER,
-        DB_PASSWORD,
-        DB_HOST,
-        DB_PORT,
-        DB_NAME,
-        MINIO_ENDPOINT,
-        MINIO_ACCESS_KEY,
-        MINIO_SECRET_KEY,
+        settings.DB_USER,
+        settings.DB_PASSWORD,
+        settings.DB_HOST,
+        settings.DB_PORT,
+        settings.DB_NAME,
+        settings.MINIO_ENDPOINT,
+        settings.MINIO_ACCESS_KEY,
+        settings.MINIO_SECRET_KEY,
     ]
 ):
     raise ValueError("Error: Missing required environment variables in .env file.")
 
-DB_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-engine = create_engine(DB_URL)
+engine = create_engine(settings.DATABASE_URL)
 
 print("--- Starting extraction pipeline to MinIO (Bronze layer) ---")
 
-ensure_bucket_exists(BRONZE_BUCKET)
+ensure_bucket_exists(settings.BRONZE_BUCKET)
 
 tables = [
     "customers",
@@ -64,9 +49,9 @@ for table in tables:
     s3_key = f"bronze/{table}/{table}.parquet"
 
     print(
-        f"Uploading {len(df)} records to MinIO S3 path: '{BRONZE_BUCKET}/{s3_key}'..."
+        f"Uploading {len(df)} records to MinIO S3 path: '{settings.BRONZE_BUCKET}/{s3_key}'..."
     )
-    s3_client.upload_fileobj(parquet_buffer, BRONZE_BUCKET, s3_key)
+    s3_client.upload_fileobj(parquet_buffer, settings.BRONZE_BUCKET, s3_key)
     print(f"✓ Successfully stored '{table}' in Bronze layer.\n")
 
 print("=== Extraction to Bronze Layer Completed Successfully! ===")
