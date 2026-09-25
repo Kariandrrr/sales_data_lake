@@ -1,5 +1,5 @@
-from clients import write_parquet
-from load_silver_datasets import df_sales_base
+from .load_silver_datasets import df_sales_base
+from ...clients import write_parquet
 
 mart_geo = (
     df_sales_base.groupby(["customer_state", "customer_city"])

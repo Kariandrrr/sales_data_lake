@@ -1,4 +1,4 @@
-from src.clients.create_s3_client import s3_client
+from . import s3_client
 
 
 def ensure_bucket_exists(bucket_name: str):
