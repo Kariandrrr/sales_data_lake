@@ -98,6 +98,8 @@ services:
       POSTGRES_DB: airflow
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
+    ports:
+      - "5433:5433"
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "airflow"]
       interval: 10s
@@ -146,6 +148,10 @@ services:
       retries: 5
       start_period: 30s
     restart: always
+    environment:
+      - AIRFLOW__CORE__PARALLELISM=4
+      - AIRFLOW__SCHEDULER__MAX_LOG_AGE__IN_DAYS=7
+      - AIRFLOW__SCHEDULER__LOG_CLEANUP_INTERVAL=3600
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -178,6 +184,7 @@ services:
       start_period: 30s
     environment:
       <<: *airflow-common-env
+      AIRFLOW__CORE__PARALLELISM: 4
       # Required to handle warm shutdown of the celery workers properly
       # See https://airflow.apache.org/docs/docker-stack/entrypoint.html#signal-propagation
       DUMB_INIT_SETSID: "0"
