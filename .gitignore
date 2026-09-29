@@ -260,3 +260,6 @@ deploy.sh
 _SUCCESS
 
 data_csv
+
+*.cfg
+
