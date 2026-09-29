@@ -14,12 +14,12 @@ services:
 
   minio:
     image: quay.io/minio/minio:latest
-    container_name: minio_lakehouse
+    container_name: minio-lakehouse
     restart: always
     environment:
       MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
       MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
-      MINIO_SERVER_URL: "http://127.0.0.1:9000"
+      #MINIO_SERVER_URL: "http://127.0.0.1:9000"
       MINIO_BROWSER_REDIRECT_URL: "http://127.0.0.1:9001"
     ports:
       - "9000:9000"
@@ -31,3 +31,8 @@ services:
 volumes:
   pgdata:
   miniodata:
+
+networks:
+  default:
+    name: de-network
+    external: true
