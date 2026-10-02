@@ -76,13 +76,14 @@ x-airflow-common:
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
     # The following line can be used to set a custom config file, stored in the local config folder
     AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
+    PYTHONPATH: /opt/airflow/src:/opt/airflow/dags
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
     - ../src:/opt/airflow/src
-  user: "${AIRFLOW_UID:-50000}:0"
+  user: "${AIRFLOW_UID:-1000}:0"
   depends_on:
     &airflow-common-depends-on
     redis:
@@ -143,16 +144,18 @@ services:
     <<: *airflow-common
     command: scheduler
     healthcheck:
-      test: ["CMD-SHELL", 'airflow jobs check --job-type SchedulerJob --hostname "$${HOSTNAME}"']
+      test: [ "CMD-SHELL", 'airflow jobs check --job-type SchedulerJob --hostname "$${HOSTNAME}"' ]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 30s
     restart: always
     environment:
-      - AIRFLOW__CORE__PARALLELISM=4
-      - AIRFLOW__SCHEDULER__MAX_LOG_AGE__IN_DAYS=7
-      - AIRFLOW__SCHEDULER__LOG_CLEANUP_INTERVAL=3600
+      <<: *airflow-common-env
+      AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+      AIRFLOW__CORE__PARALLELISM: 4
+      AIRFLOW__SCHEDULER__MAX_LOG_AGE__IN_DAYS: 7
+      AIRFLOW__SCHEDULER__LOG_CLEANUP_INTERVAL: 3600
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
