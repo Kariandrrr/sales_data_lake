@@ -1,11 +1,11 @@
-from . import load_sales_base
-from ...clients import write_parquet
+import pandas as pd
+
+from clients import write_parquet
 
 
-def build_mart_by_seller_performance() -> None:
+def build_mart_by_seller_performance(df_sales_base: pd.DataFrame) -> None:
     mart_sellers = (
-        load_sales_base()
-        .groupby("seller_id")
+        df_sales_base.groupby("seller_id")
         .agg(
             total_orders_fulfilled=("order_id", "nunique"),
             total_items_sold=("order_item_id", "count"),

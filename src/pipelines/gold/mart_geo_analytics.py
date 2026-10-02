@@ -1,11 +1,11 @@
-from . import load_sales_base
-from ...clients import write_parquet
+import pandas as pd
+
+from clients import write_parquet
 
 
-def build_mart_by_geo() -> None:
+def build_mart_by_geo(df_sales_base: pd.DataFrame) -> None:
     mart_geo = (
-        load_sales_base()
-        .groupby(["customer_state", "customer_city"])
+        df_sales_base.groupby(["customer_state", "customer_city"])
         .agg(
             total_orders=("order_id", "nunique"),
             unique_customers=("customer_id", "nunique"),

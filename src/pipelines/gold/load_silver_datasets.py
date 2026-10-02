@@ -1,6 +1,6 @@
 from pandas import DataFrame
 
-from ...clients import read_parquet
+from clients import read_parquet
 
 
 def load_sales_base() -> DataFrame:

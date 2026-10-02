@@ -1,9 +1,9 @@
-from . import load_sales_base
-from ...clients import write_parquet
+import pandas as pd
+
+from clients import write_parquet
 
 
-def build_mart_sales_by_category() -> None:
-    df_sales_base = load_sales_base()
+def build_mart_sales_by_category(df_sales_base: pd.DataFrame) -> None:
 
     mart_category = (
         df_sales_base.groupby("product_category_name_english")

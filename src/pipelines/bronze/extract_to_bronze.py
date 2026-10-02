@@ -3,8 +3,8 @@ import io
 import pandas as pd
 from sqlalchemy import create_engine
 
-from ...clients import ensure_bucket_exists, s3_client
-from ...config import settings
+from clients import ensure_bucket_exists, s3_client
+from config import settings
 
 
 def extract_to_bronze() -> None:

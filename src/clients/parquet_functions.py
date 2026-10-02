@@ -3,7 +3,7 @@ import io
 import pandas as pd
 
 from . import s3_client
-from ..config import settings
+from config import settings
 
 
 def read_parquet(key: str) -> pd.DataFrame:
