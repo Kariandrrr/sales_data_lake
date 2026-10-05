@@ -24,6 +24,11 @@ def extract_to_silver() -> None:
     df_orders = df_orders.dropna(subset=["order_purchase_timestamp"])
     write_parquet("silver/orders/orders.parquet", df_orders)
 
+    df_orders["year"] = df_orders["order_purchase_timestamp"].dt.year
+    df_orders["month"] = df_orders["order_purchase_timestamp"].dt.month
+
+    write_parquet("silver/orders", df_orders, partition_cols=["year", "month"])
+
     print("2. Deduplicating and masking PII...")
     df_customers = read_parquet("bronze/customers/customers.parquet")
 
