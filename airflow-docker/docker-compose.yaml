@@ -215,6 +215,17 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
+  data-generator:
+    image: python:3.11-slim
+    container_name: data_generator
+    volumes:
+      - ../src:/opt/airflow/src
+    command: >
+      bash -c "pip install sqlalchemy psycopg2-binary pandas &&
+               python /opt/airflow/src/scripts/generate_stream_data.py"
+    environment:
+      - DB_HOST=postgres_source
+
   airflow-init:
     <<: *airflow-common
     entrypoint: /bin/bash
