@@ -20,7 +20,9 @@ default_args = {
 @dag(
     dag_id="medallion_pipeline",
     description="Bronze -> Silver -> Gold marts",
-    schedule="0 3 * * *",
+    # schedule="0 3 * * *",
+    # for tests
+    schedule="*/5 * * * *",
     start_date=datetime(2026, 1, 1, tzinfo=local_tz),
     catchup=False,
     tags=["medallion", "lakehouse"],
