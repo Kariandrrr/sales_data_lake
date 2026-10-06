@@ -1,5 +1,4 @@
 from .bronze import extract_to_bronze
-from .silver import extract_to_silver
 from .gold import (
     load_silver_datasets,
     build_mart_by_geo,
