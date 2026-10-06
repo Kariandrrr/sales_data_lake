@@ -1,11 +1,12 @@
 FROM apache/airflow:3.3.2
 
-USER root
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-USER airflow
+USER root
 
 COPY requirements.txt /
 
-RUN pip install --no-cache-dir \
-    "apache-airflow==${AIRFLOW_VERSION}" \
-    -r /requirements.txt
+RUN uv pip install --no-cache-dir --system -r /requirements.txt
+RUN uv pip install --no-cache-dir --system pyspark
+
+USER airflow
