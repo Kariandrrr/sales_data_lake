@@ -19,7 +19,7 @@ services:
           memory: 128M
 
   minio:
-    image: quay.io/minio/minio:latest
+    image: pgsty/silo:latest
     container_name: minio-lakehouse
     restart: always
     environment:
@@ -49,6 +49,9 @@ services:
       - postgres_source
     environment:
       JAVA_OPTS: "-XX:MaxRAMPercentage=70"
+      MB_DB_FILE: "/metabase-data/metabase.db"
+    volumes:
+      - metabasedata:/metabase-data
     deploy:
       resources:
         limits:
@@ -81,6 +84,7 @@ volumes:
   pgdata:
   miniodata:
   chdata:
+  metabasedata:
 
 networks:
   default:
