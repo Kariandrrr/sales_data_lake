@@ -9,7 +9,7 @@ def validate_silver_data(dfs: dict):
         null_count = dfs[table_name][pk_col].isna().sum()
         if null_count > 0:
             raise ValueError(
-                f"[DQ FAIL] В таблице {table_name} найдено {null_count} NULL-значений в PK {pk_col}"
+                f"[DQ FAIL] In table {table_name} found {null_count} NULL-values in PK {pk_col}"
             )
 
     invalid_items = dfs["items"][
@@ -17,7 +17,7 @@ def validate_silver_data(dfs: dict):
     ].shape[0]
     if invalid_items > 0:
         raise ValueError(
-            f"[DQ FAIL] В order_items найдено {invalid_items} строк с некорректной ценой/доставкой"
+            f"[DQ FAIL] In order_items found {invalid_items} strings with incorrect price/delivery"
         )
 
     unmatched_cust = (
@@ -25,7 +25,7 @@ def validate_silver_data(dfs: dict):
     ).sum()
     if unmatched_cust > 0:
         raise ValueError(
-            f"[DQ FAIL] Найдено {unmatched_cust} заказов с несуществующим customer_id"
+            f"[DQ FAIL] Found {unmatched_cust} orders with unrealistic customer_id"
         )
 
     unmatched_prod = (
@@ -33,7 +33,7 @@ def validate_silver_data(dfs: dict):
     ).sum()
     if unmatched_prod > 0:
         raise ValueError(
-            f"[DQ FAIL] Найдено {unmatched_prod} позиций с несуществующим product_id"
+            f"[DQ FAIL] Found {unmatched_prod} positions with unrealistic product_id"
         )
 
     unmatched_seller = (
@@ -41,7 +41,7 @@ def validate_silver_data(dfs: dict):
     ).sum()
     if unmatched_seller > 0:
         raise ValueError(
-            f"[DQ FAIL] Найдено {unmatched_seller} позиций с несуществующим seller_id"
+            f"[DQ FAIL] Found {unmatched_seller} positions with unrealistic seller_id"
         )
 
-    print("[DQ SUCCESS] Проверки качества пройдены для всех сущностей!")
+    print("[DQ SUCCESS] Checks of data quality are done!")
