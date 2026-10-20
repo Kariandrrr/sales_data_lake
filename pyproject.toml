@@ -23,3 +23,10 @@ dependencies = [
     "python-dotenv>=1.2.3",
     "sqlalchemy>=2.0.54",
 ]
+
+[dependency-groups]
+dbt = [
+    "dbt-clickhouse>=1.10.3",
+    "dbt-core>=1.12.5",
+    "dbt-postgres>=1.11.0",
+]
