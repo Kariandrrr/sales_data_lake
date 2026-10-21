@@ -83,6 +83,7 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
     - ../src:/opt/airflow/src
+    - ../dbt_lake:/opt/airflow/dbt_lake
   user: "${AIRFLOW_UID:-1000}:0"
   depends_on:
     &airflow-common-depends-on
