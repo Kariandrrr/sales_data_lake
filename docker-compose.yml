@@ -39,25 +39,25 @@ services:
         reservations:
           memory: 256M
 
-  metabase:
-    image: metabase/metabase:latest
-    container_name: metabase
-    restart: always
-    ports:
-      - "3000:3000"
-    depends_on:
-      - postgres_source
-    environment:
-      JAVA_OPTS: "-XX:MaxRAMPercentage=70"
-      MB_DB_FILE: "/metabase-data/metabase.db"
-    volumes:
-      - metabasedata:/metabase-data
-    deploy:
-      resources:
-        limits:
-          memory: 1024M
-        reservations:
-          memory: 512M
+  #  metabase:
+  #    image: metabase/metabase:latest
+  #    container_name: metabase
+  #    restart: always
+  #    ports:
+  #      - "3000:3000"
+  #    depends_on:
+  #      - postgres_source
+  #    environment:
+  #      JAVA_OPTS: "-XX:MaxRAMPercentage=70"
+  #      MB_DB_FILE: "/metabase-data/metabase.db"
+  #    volumes:
+  #      - metabasedata:/metabase-data
+  #    deploy:
+  #      resources:
+  #        limits:
+  #          memory: 1024M
+  #        reservations:
+  #          memory: 512M
 
   clickhouse:
     image: clickhouse/clickhouse-server:latest
@@ -70,21 +70,23 @@ services:
       CLICKHOUSE_DB: default
       CLICKHOUSE_USER: default
       CLICKHOUSE_PASSWORD: clickhouse
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
     volumes:
       - chdata:/var/lib/clickhouse
       - ./clickhouse-low-mem.xml:/etc/clickhouse-server/config.d/low-mem.xml:ro
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: 2G
         reservations:
-          memory: 512M
+          memory: 800M
 
 volumes:
   pgdata:
   miniodata:
   chdata:
-  metabasedata:
+  clickhousedata:
+  #metabasedata:
 
 networks:
   default:
