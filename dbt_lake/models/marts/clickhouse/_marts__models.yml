@@ -1,0 +1,23 @@
+version: 2
+
+models:
+  - name: int_sales_base
+    description: "Flat base of sales: 1 row = 1 order position"
+
+  - name: mart_sales_by_category
+    columns:
+      - name: product_category_name_english
+        data_tests: [ not_null, unique ]
+      - name: total_revenue
+        data_tests:
+          - dbt_utils.accepted_range: { min_value: 0 }
+
+  - name: mart_geo_analytics
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [ customer_state, customer_city ]
+
+  - name: mart_seller_performance
+    columns:
+      - name: seller_id
+        data_tests: [ not_null, unique ]
