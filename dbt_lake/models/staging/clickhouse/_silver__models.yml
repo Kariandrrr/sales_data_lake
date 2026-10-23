@@ -1,0 +1,95 @@
+version: 2
+
+models:
+  - name: stg_ch__orders
+    columns:
+      - name: order_id
+        data_tests: [ not_null, unique ]
+      - name: customer_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_ch__customers')
+                field: customer_id
+      - name: order_status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [ delivered, shipped, canceled, unavailable, invoiced,
+                          processing, created, approved ]
+              config:
+                severity: warn
+      - name: ordered_at
+        data_tests: [ not_null ]
+
+  - name: stg_ch__order_items
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [ order_id, order_item_id ]
+    columns:
+      - name: order_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_ch__orders')
+                field: order_id
+      - name: product_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_ch__products')
+                field: product_id
+      - name: seller_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_ch__sellers')
+                field: seller_id
+      - name: item_price
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: freight_amount
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+
+  - name: stg_ch__customers
+    columns:
+      - name: customer_id
+        data_tests: [ not_null, unique ]
+      - name: customer_unique_id
+        data_tests: [ not_null ]
+
+  - name: stg_ch__products
+    columns:
+      - name: product_id
+        data_tests: [ not_null, unique ]
+      - name: category_name
+        data_tests: [ not_null ]
+
+  - name: stg_ch__sellers
+    columns:
+      - name: seller_id
+        data_tests: [ not_null, unique ]
+
+  - name: stg_ch__order_payments
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [ order_id, payment_sequential ]
+
+  - name: stg_ch__order_reviews
+    columns:
+      - name: review_id
+        data_tests: [ not_null, unique ]
+
+  - name: stg_ch__category_translation
+    columns:
+      - name: category_name
+        data_tests: [ not_null, unique ]
