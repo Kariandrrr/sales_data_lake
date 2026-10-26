@@ -1,4 +1,4 @@
-{{ config(materialized='table', engine='MergeTree', order_by='(customer_state, customer_city)') }}
+{{ config(materialized='table', engine='MergeTree', order_by='(customer_state, customer_city)', settings={'allow_nullable_key': 1}) }}
 
 select customer_state,
        customer_city,
