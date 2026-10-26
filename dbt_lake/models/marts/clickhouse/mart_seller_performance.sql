@@ -1,4 +1,4 @@
-{{ config(materialized='table', engine='MergeTree', order_by='seller_id') }}
+{{ config(materialized='table', engine='MergeTree', order_by='seller_id', settings={'allow_nullable_key': 1}) }}
 
 select seller_id,
        uniqExact(order_id)  as total_orders_fulfilled,
