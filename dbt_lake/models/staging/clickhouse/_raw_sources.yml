@@ -1,0 +1,21 @@
+version: 2
+
+sources:
+  - name: ch_raw
+    description: "Bronze: parquet in MinIO, available in ClickHouse as table of engine S3"
+    schema: raw
+    loader: "python (src/pipelines/bronze/extract_to_bronze.py)"
+    tags: [ "clickhouse", "bronze" ]
+
+    tables:
+      - name: orders
+        columns:
+          - name: order_id
+            data_tests: [ not_null ]
+      - name: order_items
+      - name: customers
+      - name: products
+      - name: sellers
+      - name: order_payments
+      - name: order_reviews
+      - name: product_category_name_translation

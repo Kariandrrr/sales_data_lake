@@ -70,20 +70,22 @@ services:
       CLICKHOUSE_DB: default
       CLICKHOUSE_USER: default
       CLICKHOUSE_PASSWORD: clickhouse
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
     volumes:
       - chdata:/var/lib/clickhouse
       - ./clickhouse-low-mem.xml:/etc/clickhouse-server/config.d/low-mem.xml:ro
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: 2G
         reservations:
-          memory: 512M
+          memory: 800M
 
 volumes:
   pgdata:
   miniodata:
   chdata:
+  clickhousedata:
   metabasedata:
 
 networks:

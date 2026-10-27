@@ -1,14 +1,14 @@
-import sys
+import os
 from datetime import datetime, timedelta
 
 import pendulum
-from airflow.decorators import dag, task
-
-if "/opt/airflow/src" not in sys.path:
-    sys.path.append("/opt/airflow/src")
-
+from airflow.sdk import dag, task
 
 local_tz = pendulum.timezone("Europe/Moscow")
+
+DBT_DIR = "/opt/airflow/dbt_lake"
+COMMON = f"--profiles-dir {DBT_DIR} --no-use-colors"
+DBT = os.environ.get("DBT_BIN", "dbt")
 
 default_args = {
     "owner": "karina",
@@ -19,13 +19,15 @@ default_args = {
 
 @dag(
     dag_id="medallion_pipeline",
-    description="Bronze -> Silver -> Gold marts",
+    description="Postgres -> bronze -> dbt: silver -> gold in ClickHouse",
     # schedule="0 3 * * *",
     # for tests
     schedule="*/5 * * * *",
     start_date=datetime(2026, 1, 1, tzinfo=local_tz),
     catchup=False,
-    tags=["medallion", "lakehouse"],
+    max_active_runs=1,
+    tags=["medallion", "lakehouse", "dbt"],
+    default_args=default_args,
 )
 def medallion_pipeline():
 
@@ -35,44 +37,23 @@ def medallion_pipeline():
 
         extract_to_bronze()
 
-    @task()
-    def silver():
-        from pipelines.silver.extract_to_silver import extract_to_silver
-
-        extract_to_silver()
-
-    @task()
-    def load_base_data():
-        from pipelines.gold.load_silver_datasets import load_sales_base
-
-        return load_sales_base()
-
-    @task()
-    def mart_category(df_sales_base):
-        from pipelines.gold.mart_sales_by_category import build_mart_sales_by_category
-
-        build_mart_sales_by_category(df_sales_base)
-
-    @task()
-    def mart_sellers(df_sales_base):
-        from pipelines.gold.mart_seller_performance import (
-            build_mart_by_seller_performance,
+    @task.bash()
+    def dbt_silver() -> str:
+        return (
+            f"cd {DBT_DIR} && {DBT} build --target ch_prod --select tag:silver {COMMON}"
         )
 
-        build_mart_by_seller_performance(df_sales_base)
+    @task.bash()
+    def dbt_gold() -> str:
+        return (
+            f"cd {DBT_DIR} && {DBT} build --target ch_prod --select tag:gold {COMMON}"
+        )
 
-    @task()
-    def mart_geo(df_sales_base):
-        from pipelines.gold.mart_geo_analytics import build_mart_by_geo
+    @task.bash()
+    def dbt_docs() -> str:
+        return f"cd {DBT_DIR} && {DBT} docs generate --target ch_prod {COMMON}"
 
-        build_mart_by_geo(df_sales_base)
-
-    b = bronze()
-    s = silver()
-    base_df = load_base_data()
-
-    b >> s >> base_df
-    base_df >> [mart_category(base_df), mart_sellers(base_df), mart_geo(base_df)]
+    bronze() >> dbt_silver() >> dbt_gold() >> dbt_docs()
 
 
 medallion_pipeline()

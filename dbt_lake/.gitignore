@@ -1,0 +1,11 @@
+target/
+dbt_packages/
+logs/
+.env
+.user.yml
+
+/theory/
+profiles.yml
+.env.*
+*.env
+!*.env.example

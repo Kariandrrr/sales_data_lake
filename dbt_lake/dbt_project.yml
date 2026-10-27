@@ -1,0 +1,71 @@
+name: 'dbt_lake'
+version: '0.1.0'
+config-version: 2
+
+profile: 'dbt_lake'
+
+model-paths: [ "models" ]
+analysis-paths: [ "analyses" ]
+test-paths: [ "tests" ]
+seed-paths: [ "seeds" ]
+macro-paths: [ "macros" ]
+snapshot-paths: [ "snapshots" ]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+  - "logs"
+
+vars:
+  incremental_lookback_days: 3
+
+models:
+  dbt_lake:
+    +persist_docs:
+      relation: true
+      columns: true
+
+    staging:
+      +materialized: view
+      +tags: [ "staging" ]
+
+      postgres:
+        +database: "sales_db"
+        +schema: "stg"
+        +tags: [ "postgres" ]
+
+      clickhouse:
+        +materialized: table
+        +schema: "silver"
+        +tags: [ "clickhouse", "silver" ]
+
+    intermediate:
+      +materialized: table
+      +tags: [ "intermediate" ]
+      clickhouse:
+        +schema: "silver"
+        +tags: [ "clickhouse", "silver" ]
+
+    marts:
+      +materialized: table
+      +tags: [ "marts" ]
+
+      postgres:
+        +database: "sales_db"
+        +schema: "gold"
+        +tags: [ "postgres" ]
+
+      clickhouse:
+        +schema: "gold"
+        +engine: "MergeTree"
+        +tags: [ "clickhouse", "gold" ]
+
+seeds:
+  dbt_lake:
+    +quote_columns: false
+    +schema: "seeds"
+
+snapshots:
+  dbt_lake:
+    +target_schema: "snapshots"
