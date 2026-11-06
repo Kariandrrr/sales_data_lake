@@ -22,7 +22,7 @@ default_args = {
     description="Postgres -> bronze -> dbt: silver -> gold in ClickHouse",
     # schedule="0 3 * * *",
     # for tests
-    schedule="*/5 * * * *",
+    schedule="0 */3 * * *",
     start_date=datetime(2026, 1, 1, tzinfo=local_tz),
     catchup=False,
     max_active_runs=1,
