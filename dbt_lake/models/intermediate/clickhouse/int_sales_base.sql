@@ -5,11 +5,13 @@ with items as (select * from {{ ref('stg_ch__order_items') }}),
      customers as (select * from {{ ref('stg_ch__customers') }}),
      products as (select * from {{ ref('stg_ch__products') }}),
      translations as (select * from {{ ref('stg_ch__category_translation') }}),
+     sellers as (select * from {{ ref('stg_ch__sellers') }}),
 
      joined as (select i.order_id                            as order_id,
                        i.order_item_id                       as order_item_id,
                        i.product_id                          as product_id,
                        i.seller_id                           as seller_id,
+                       s.state                               as seller_state,
                        o.customer_id                         as customer_id,
                        c.customer_unique_id                  as customer_unique_id,
                        i.item_price                          as item_price,
@@ -29,7 +31,8 @@ with items as (select * from {{ ref('stg_ch__order_items') }}),
                          inner join orders o on o.order_id = i.order_id
                          left join customers c on c.customer_id = o.customer_id
                          left join products p on p.product_id = i.product_id
-                         left join translations t on t.category_name = p.category_name)
+                         left join translations t on t.category_name = p.category_name
+                         left join sellers s on s.seller_id = i.seller_id)
 
 select *
 from joined
