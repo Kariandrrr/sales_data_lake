@@ -4,20 +4,113 @@ models:
   - name: int_sales_base
     description: "Flat base of sales: 1 row = 1 order position"
 
+  - name: int_orders_delivery
+    description: "Flat base of sales: 1 row = 1 order position, optimized for delivery performance"
+
   - name: mart_sales_by_category
+    description: "Sales aggregates by product category. 
+    One row = one category. Source - int_sales_base. 
+    Metrics: total_orders (unique orders, uniqExact), total_items_sold (order items),
+      total_revenue (sum item_price), total_freight (sum freight_amount),
+      avg_item_price (avg price per item, not per order). Sorted by total_orders desc"
     columns:
       - name: product_category_name_english
-        data_tests: [ not_null, unique ]
+        data_tests:
+          - not_null
+          - unique
       - name: total_revenue
         data_tests:
-          - dbt_utils.accepted_range: { min_value: 0 }
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
 
   - name: mart_geo_analytics
+    description: "Sales aggregated by customer state and city.
+    One row = one category. Source - int_sales_base.
+    Metrics: total_orders (unique orders), unique_customers (unique customers),
+      total_spent (sum of item_price + freight_amount),
+      avg_freight_cost (avg freight per item). Sorted by total_spent desc."
+    columns:
+      - name: customer_state
+        data_tests:
+          - not_null
+      - name: customer_city
+        data_tests:
+          - not_null
     data_tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns: [ customer_state, customer_city ]
+          arguments:
+            combination_of_columns:
+              - customer_state
+              - customer_city
 
   - name: mart_seller_performance
+    description: "Sales aggregates per seller.
+    One row = one seller_id. Source - int_sales_base.
+    Metrics: total_orders_fulfilled (unique orders), total_items_sold (order items),
+      total_gross_revenue (sum item_price, excludes freight),
+      first_order_at / last_order_at (min/max order_purchase_timestamp).
+    Sorted by total_gross_revenue desc."
     columns:
       - name: seller_id
-        data_tests: [ not_null, unique ]
+        data_tests:
+          - not_null
+          - unique
+      - name: total_gross_revenue
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+
+  - name: mart_delivery_performance
+    description: "Delivery performance per delivered order item.
+    One row = one delivered order item (order_id, order_item_id). Source - int_orders_delivery.
+    Metrics: purchase_days (days from purchase to delivery),
+      estimated_days (days from purchase to estimated delivery),
+      late_days (max(delivered - estimated, 0)), is_late (1 if late_days > 0 else 0)."
+    config:
+      tags: [ 'mart', 'delivery' ]
+      columns:
+        - name: order_id
+          data_tests:
+            - not_null
+        - name: order_item_id
+          data_tests:
+            - not_null
+        - name: customer_state
+          data_tests:
+            - not_null
+            - accepted_values:
+                arguments:
+                  values: [ 'AC','AL','AM','AP','BA','CE','DF','ES','GO','MA',
+                            'MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN',
+                            'RO','RR','RS','SC','SE','SP','TO' ]
+        - name: seller_id
+          data_tests:
+            - not_null
+        - name: purchase_days
+          data_tests:
+            - not_null
+            - dbt_utils.accepted_range:
+                arguments:
+                  min_value: 0
+                  max_value: 400
+        - name: late_days
+          data_tests:
+            - not_null
+            - dbt_utils.accepted_range:
+                arguments:
+                  min_value: 0
+        - name: is_late
+          data_tests:
+            - not_null
+            - accepted_values:
+                arguments:
+                  values: [ 0, 1 ]
+      data_tests:
+        - dbt_utils.unique_combination_of_columns:
+            arguments:
+              combination_of_columns:
+                - order_id
+                - order_item_id
