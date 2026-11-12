@@ -8,7 +8,7 @@ with items as (select * from {{ ref('stg_ch__order_items') }}),
      sellers as (select * from {{ ref('stg_ch__sellers') }}),
 
      joined as (select i.order_id                            as order_id,
-                       i.order_item_id                       as order_item_id,
+                       assumeNotNull(order_item_id)          as order_item_id,
                        i.product_id                          as product_id,
                        i.seller_id                           as seller_id,
                        s.state                               as seller_state,
