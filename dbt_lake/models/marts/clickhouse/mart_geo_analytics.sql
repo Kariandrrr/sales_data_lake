@@ -1,12 +1,22 @@
-{{ config(materialized='table', engine='MergeTree', order_by='(customer_state, customer_city)', settings={'allow_nullable_key': 1}) }}
+{{ config(
+    materialized='table',
+    engine='MergeTree',
+    order_by='(customer_state, customer_city)',
+    settings={'allow_nullable_key': 1}
+) }}
 
-select customer_state,
-       customer_city,
-       uniqExact(order_id)    as total_orders,
-       uniqExact(customer_id) as unique_customers,
-       sum(total_value)       as total_spent,
-       avg(freight_amount)    as avg_freight_cost
+with base as (select *
+              from {{ ref('int_sales_base') }}),
+     final as (select customer_state,
+                      customer_city,
+                      uniqExact(order_id)    as total_orders,
+                      uniqExact(customer_id) as unique_customers,
+                      sum(total_value)       as total_spent,
+                      avg(freight_amount)    as avg_freight_cost
 -- , avg(freight_amount) as avg_freiht_cost   -- might be wrong #TODO
-from {{ ref('int_sales_base') }}
-group by customer_state, customer_city
+               from base
+               group by customer_state, customer_city)
+
+select *
+from final
 order by total_spent desc

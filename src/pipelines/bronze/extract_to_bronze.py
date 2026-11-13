@@ -77,7 +77,7 @@ def extract_to_bronze() -> None:
 
     tables = [
         "customers",
-        # "geolocation", TODO: add if geolocation in mart is necessary
+        "geolocation",
         "order_items",
         "order_payments",
         "order_reviews",
