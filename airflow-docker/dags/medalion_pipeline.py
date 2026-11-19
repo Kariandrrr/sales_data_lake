@@ -32,10 +32,10 @@ default_args = {
 def medallion_pipeline():
 
     @task()
-    def bronze():
+    def bronze(table: str):
         from pipelines.bronze.extract_to_bronze import extract_to_bronze
 
-        extract_to_bronze()
+        extract_to_bronze(tables=[table])
 
     @task.bash()
     def dbt_silver() -> str:
