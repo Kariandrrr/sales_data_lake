@@ -1,3 +1,4 @@
+import argparse
 import os
 import tempfile
 from itertools import chain
@@ -10,8 +11,21 @@ from sqlalchemy import create_engine, text
 from clients import ensure_bucket_exists, s3_client
 from config import settings
 
-CHUNK_SIZE = 10_000
-ROW_GROUP_SIZE = 50_000
+CHUNK_SIZE = 50_000
+ROW_GROUP_SIZE = 100_000
+
+
+ALL_TABLES = [
+    "customers",
+    "geolocation",
+    "order_items",
+    "order_payments",
+    "order_reviews",
+    "orders",
+    "products",
+    "sellers",
+    "product_category_name_translation",
+]
 
 
 def _write_table_chunked(engine, table: str) -> tuple[str, int]:
@@ -29,7 +43,7 @@ def _write_table_chunked(engine, table: str) -> tuple[str, int]:
 
             first = next(chunks, None)
             if first is None:
-                raise RuntimeError(f"таблица '{table}' пустая — писать нечего")
+                raise RuntimeError(f"Table '{table}' is empty — nothing to write")
 
             schema = pa.Table.from_pandas(first, preserve_index=False).schema
             writer = pq.ParquetWriter(tmp_path, schema, compression="snappy")
@@ -44,7 +58,7 @@ def _write_table_chunked(engine, table: str) -> tuple[str, int]:
                     writer.write_table(arrow, row_group_size=ROW_GROUP_SIZE)
 
                     total += len(chunk)
-                    print(f"  chunk {i}: +{len(chunk)} rows (всего {total})")
+                    print(f"  chunk {i}: +{len(chunk)} rows (total {total})")
             finally:
                 writer.close()
     except Exception:
@@ -54,7 +68,16 @@ def _write_table_chunked(engine, table: str) -> tuple[str, int]:
     return tmp_path, total
 
 
-def extract_to_bronze() -> None:
+def extract_to_bronze(tables: list[str] | None = None) -> None:
+    if tables is None:
+        tables = ALL_TABLES
+    else:
+        unknown = set(tables) - set(ALL_TABLES)
+        if unknown:
+            raise ValueError(f"Unknown table(s): {', '.join(sorted(unknown))}")
+
+    tables = tables or ALL_TABLES
+
     if not all(
         [
             settings.DB_USER,
@@ -74,18 +97,6 @@ def extract_to_bronze() -> None:
     print("--- Starting extraction pipeline to MinIO (Bronze layer) ---")
 
     ensure_bucket_exists(settings.BRONZE_BUCKET)
-
-    tables = [
-        "customers",
-        "geolocation",
-        "order_items",
-        "order_payments",
-        "order_reviews",
-        "orders",
-        "products",
-        "sellers",
-        "product_category_name_translation",
-    ]
 
     for table in tables:
         print(f"Extracting table '{table}' from Postgres...")
@@ -111,4 +122,14 @@ def extract_to_bronze() -> None:
 
 
 if __name__ == "__main__":
-    extract_to_bronze()
+    parser = argparse.ArgumentParser(
+        description="Extract tables from Postgres into Bronze layer as Parquet"
+    )
+    parser.add_argument(
+        "--table",
+        action="append",
+        help="tables to extract from Postgres tables",
+    )
+    args = parser.parse_args()
+
+    extract_to_bronze(args.tables)
