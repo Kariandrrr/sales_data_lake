@@ -36,12 +36,11 @@ models:
         +tags: [ "postgres" ]
 
       clickhouse:
-        +materialized: table
         +schema: "silver"
         +tags: [ "clickhouse", "silver" ]
 
     intermediate:
-      +materialized: table
+      +materialized: view
       +tags: [ "intermediate" ]
       clickhouse:
         +schema: "silver"
@@ -65,6 +64,8 @@ seeds:
   dbt_lake:
     +quote_columns: false
     +schema: "seeds"
+    +settings:
+      async_insert: 0
 
 snapshots:
   dbt_lake:
