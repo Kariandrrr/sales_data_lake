@@ -1,6 +1,7 @@
 import argparse
 import os
 import tempfile
+from datetime import date
 from itertools import chain
 
 import pandas as pd
@@ -68,7 +69,10 @@ def _write_table_chunked(engine, table: str) -> tuple[str, int]:
     return tmp_path, total
 
 
-def extract_to_bronze(tables: list[str] | None = None) -> None:
+def extract_to_bronze(tables: list[str] | None = None, dt: str | None = None) -> None:
+    if dt is None:
+        dt = date.today().isoformat()
+
     if tables is None:
         tables = ALL_TABLES
     else:
@@ -103,7 +107,7 @@ def extract_to_bronze(tables: list[str] | None = None) -> None:
 
         tmp_path, rows = _write_table_chunked(engine, table)
 
-        s3_key = f"bronze/{table}/{table}.parquet"
+        s3_key = f"bronze/dt={dt}/{table}/{table}.parquet"
 
         try:
             print(
