@@ -4,7 +4,7 @@ from airflow.sdk import dag, task
 
 
 @dag(
-    dag_id="03_sensors_producer",
+    dag_id="03_1_sensors_producer",
     schedule=None,
     catchup=False,
     is_paused_upon_creation=True,
