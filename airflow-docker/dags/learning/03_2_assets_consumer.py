@@ -23,7 +23,7 @@ BRONZE_ORDERS_ASSET = Asset(
 )
 def consumer_asset():
 
-    @task
+    @task(pool="dbt")
     def run_dbt_local(ds=None):
 
         file_key = f"bronze/dt={ds}/orders/orders.parquet"
