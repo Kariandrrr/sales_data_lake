@@ -1,8 +1,5 @@
-{{ config(materialized='table', order_by='review_id') }}
 {{ config(
-    engine='MergeTree',
-    order_by=['review_id'],
-    settings={'allow_nullable_key': 1}
+    order_by=['review_id']
 ) }}
 
 with source as (select *

@@ -1,8 +1,5 @@
-{{ config(materialized='table', order_by='(order_id, payment_sequential)') }}
 {{ config(
-    engine='MergeTree',
-    order_by=['(order_id, payment_sequential)'],
-    settings={'allow_nullable_key': 1}
+    order_by=['(order_id, payment_sequential)']
 ) }}
 
 with source as (select *

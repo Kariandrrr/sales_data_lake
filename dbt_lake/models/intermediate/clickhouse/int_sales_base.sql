@@ -1,4 +1,4 @@
-{{ config(materialized='table', order_by='tuple()') }}
+{{ config(order_by='tuple()') }}
 
 with items as (select * from {{ ref('stg_ch__order_items') }}),
      orders as (select * from {{ ref('stg_ch__orders') }}),

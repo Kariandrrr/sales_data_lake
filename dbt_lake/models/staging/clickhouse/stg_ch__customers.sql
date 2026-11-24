@@ -1,4 +1,4 @@
-{{ config(materialized='table', order_by='customer_id') }}
+{{ config( order_by='customer_id') }}
 
 with source as (select *
                 from {{ source('ch_raw', 'customers') }}),
@@ -6,7 +6,7 @@ with source as (select *
      deduped as (select *
                  from source
                  where customer_id is not null
-                 limit 1 by customer_id)
+    limit 1 by customer_id)
 
 select customer_id,
        customer_unique_id,

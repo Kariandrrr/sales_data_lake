@@ -1,4 +1,4 @@
-{{ config(materialized='table', order_by='product_id') }}
+{{ config(order_by='product_id') }}
 
 with source as (select *
                 from {{ source('ch_raw', 'products') }}),
@@ -6,7 +6,7 @@ with source as (select *
      deduped as (select *
                  from source
                  where product_id is not null
-                 limit 1 by product_id)
+    limit 1 by product_id)
 
 select product_id,
        coalesce(nullIf(trimBoth(product_category_name), ''), 'unknown') as category_name,

@@ -1,4 +1,4 @@
-{{ config(materialized='table', order_by='tuple()') }}
+{{ config(order_by='tuple()') }}
 
 with base as (select *
               from {{ ref('int_orders_delivery') }}),

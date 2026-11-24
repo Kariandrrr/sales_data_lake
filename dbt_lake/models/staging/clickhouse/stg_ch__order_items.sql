@@ -1,9 +1,5 @@
-{{ config(materialised='table', order_by='(order_id, order_item_id)') }}
-
 {{ config(
-    engine='MergeTree',
-    order_by=['(order_id, order_item_id)'],
-    settings={'allow_nullable_key': 1}
+    order_by=['(order_id, order_item_id)']
 ) }}
 
 with source as (select *
@@ -28,7 +24,7 @@ with source as (select *
      dedupted as (select *
                   from valid
                   order by item_price DESC
-                  limit 1 by (order_id, order_item_id))
+    limit 1 by (order_id, order_item_id))
 
 select *
 from dedupted
