@@ -23,8 +23,13 @@ SCRIPTS = [
 ]
 
 
-def generate(ds: str | None = None, rows: int = 10) -> str:
+def generate(ds: str | None = None, rows: int = 10, allow_future: bool = False) -> str:
     ds = ds or date.today().isoformat()
+    if not allow_future and ds > date.today().isoformat():
+        raise SystemExit(
+            f"refusing to generate future date {ds} (today is {date.today().isoformat()}); "
+            "pass --allow-future if you really mean it"
+        )
     engine = create_engine(settings.DATABASE_URL)
     try:
         with engine.begin() as conn:
@@ -43,5 +48,6 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--ds", help="logical date, YYYY-MM-DD (default: today)")
     p.add_argument("--rows", type=int, default=10)
+    p.add_argument("--allow-future", action="store_true")
     a = p.parse_args()
-    generate(ds=a.ds, rows=a.rows)
+    generate(ds=a.ds, rows=a.rows, allow_future=a.allow_future)
