@@ -4,6 +4,8 @@ from datetime import datetime
 
 from airflow.sdk import dag, Asset, task
 
+from clients.create_s3_client import s3_client
+
 BRONZE_ORDERS_ASSET = Asset(
     name="bronze_orders",
     uri="s3://bronze/dt=*/orders/orders.parquet",
@@ -22,11 +24,32 @@ BRONZE_ORDERS_ASSET = Asset(
 def consumer_asset():
 
     @task
-    def run_dbt_local():
+    def run_dbt_local(ds=None):
+
+        file_key = f"bronze/dt={ds}/orders/orders.parquet"
+        print(f"Validating data for dt={ds}...")
+
+        try:
+            response = s3_client.head_object(Bucket="bronze", Key=file_key)
+            file_size = response["ContentLength"]
+
+            if file_size == 0:
+                raise ValueError(f"File {file_key} is empty (o bytes)")
+            print(f"File validated: {file_key}, Size: {file_size} bytes")
+
+        except s3_client.exceptions.ClientError as e:
+            error_code = e.response["Error"]["Code"]
+            if error_code == "404":
+                raise FileNotFoundError(f"File not found: {file_key}")
+            elif error_code == "403":
+                raise PermissionError(f"Access denied to: {file_key}")
+            else:
+                raise RuntimeError(f"S3 Error [{error_code}]: {e}")
+
         project_dir = "/opt/airflow/dbt_lake"
         profiles_dir = "/opt/airflow/dbt_lake"
 
-        selector = "tag:silver,tag:gold"
+        selector = "models/staging/clickhouse models/intermediate/clickhouse models/marts/clickhouse"
 
         cmd = [
             "dbt",
@@ -35,6 +58,8 @@ def consumer_asset():
             project_dir,
             "--profiles-dir",
             profiles_dir,
+            "--target",
+            "ch_dev",
             "--select",
             selector,
         ]
@@ -46,7 +71,11 @@ def consumer_asset():
                 capture_output=True,
                 text=True,
                 check=False,
-                env={**os.environ, "DBT_PROFILES_DIR": profiles_dir},
+                env={
+                    **os.environ,
+                    "DBT_PROFILES_DIR": profiles_dir,
+                    "CH_HOST": "clickhouse",
+                },
             )
 
             print("=== DBT STDOUT ===")
