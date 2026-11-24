@@ -1,23 +1,16 @@
-DELETE
-FROM orders
-WHERE _ingested_at::DATE = CAST(:ds AS DATE);
-
-WITH g AS (SELECT MD5(RANDOM()::TEXT || CLOCK_TIMESTAMP()::TEXT)                AS order_id,
-                  (SELECT customer_id FROM customers ORDER BY RANDOM() LIMIT 1) AS customer_id,
-                  CAST(:ds AS TIMESTAMPTZ) + (RANDOM() * INTERVAL '20 hours')   AS purchase
-           FROM GENERATE_SERIES(1, (:rows)::INT))
-INSERT
-INTO orders (order_id, customer_id, order_status,
-             order_purchase_timestamp, order_approved_at,
-             order_delivered_carrier_date, order_delivered_customer_date,
-             order_estimated_delivery_date, _ingested_at)
-SELECT order_id,
-       customer_id,
+-- Insert :rows new delivered orders for logical date :ds.
+-- Cleanup of the previous batch is done by generate.py (FK-safe order).
+INSERT INTO orders (order_id, customer_id, order_status,
+                    order_purchase_timestamp, order_approved_at,
+                    order_delivered_at, order_estimated_delivery_date,
+                    _ingested_at)
+SELECT gen_random_uuid()::TEXT,
+       (SELECT customer_id FROM customers ORDER BY RANDOM() LIMIT 1),
        'delivered',
        purchase,
-       purchase + (RANDOM() * INTERVAL '2 hours'),
-       purchase + (RANDOM() * INTERVAL '2 days'),
-       purchase + INTERVAL '2 days' + (RANDOM() * INTERVAL '12 days'),
-       purchase + INTERVAL '10 days' + (RANDOM() * INTERVAL '10 days'),
-       CAST(:ds AS TIMESTAMPTZ) + (RANDOM() * INTERVAL '23 hours')
-FROM g;
+       purchase + INTERVAL '2 hours',
+       purchase + (INTERVAL '1 day' * (2 + FLOOR(RANDOM() * 12)::INT)),
+       purchase + (INTERVAL '1 day' * (10 + FLOOR(RANDOM() * 10)::INT)),
+       CAST(:ds AS TIMESTAMPTZ)
+FROM (SELECT CAST(:ds AS TIMESTAMPTZ) - (INTERVAL '1 day' * FLOOR(RANDOM() * 20)::INT) AS purchase
+      FROM GENERATE_SERIES(1, :rows)) AS s;
