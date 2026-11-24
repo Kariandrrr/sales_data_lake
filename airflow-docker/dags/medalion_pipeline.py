@@ -20,9 +20,7 @@ default_args = {
 @dag(
     dag_id="medallion_pipeline",
     description="Postgres -> bronze -> dbt: silver -> gold in ClickHouse",
-    # schedule="0 3 * * *",
-    # for tests
-    schedule="0 */3 * * *",
+    schedule="@daily",
     start_date=datetime(2026, 1, 1),
     catchup=False,
     max_active_runs=1,
@@ -38,22 +36,28 @@ def medallion_pipeline():
         return ALL_TABLES
 
     @task(max_active_tis_per_dagrun=2)
-    def bronze(table: str):
+    def bronze(table: str, ds: str | None = None):
         from pipelines.bronze.extract_to_bronze import extract_to_bronze
 
-        extract_to_bronze(tables=[table])
+        extract_to_bronze(tables=[table], dt=ds)
         return table
 
     @task.bash()
-    def dbt_silver() -> str:
+    def dbt_silver(ds=None):
         return (
-            f"cd {DBT_DIR} && {DBT} build --target ch_prod --select tag:silver {COMMON}"
+            f"cd {DBT_DIR} && {DBT} build --target ch_prod "
+            f"--select tag:silver "
+            f'--vars \'{{"dt": "{ds}"}}\' '
+            f"{COMMON}"
         )
 
     @task.bash()
-    def dbt_gold() -> str:
+    def dbt_gold(ds=None):
         return (
-            f"cd {DBT_DIR} && {DBT} build --target ch_prod --select tag:gold {COMMON}"
+            f"cd {DBT_DIR} && {DBT} build --target ch_prod "
+            f"--select tag:gold "
+            f'--vars \'{{"dt": "{ds}"}}\' '
+            f"{COMMON}"
         )
 
     @task.bash()
